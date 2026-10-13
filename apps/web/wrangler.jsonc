@@ -12,8 +12,15 @@
     // and the visitor counter API.
     "run_worker_first": ["/_matrix/*", "/_continuwuity/*", "/.well-known/matrix/*", "/api/*"],
   },
-  // No database_id: Wrangler creates the database on the first deploy.
-  "d1_databases": [{ "binding": "DB" }],
+  // The visitor counter's database. Wrangler created it on the first deploy;
+  // the ID is pinned so every later deploy uses the same one.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "rustbuilderz-web-db",
+      "database_id": "94babbe3-a79d-436a-a245-0fdcaa0641db",
+    },
+  ],
   // A route, not a custom domain: the apex keeps its existing DNS record and
   // origin, and the Worker sits in front of it.
   "routes": [{ "pattern": "rustbuilderz.xyz/*", "zone_name": "rustbuilderz.xyz" }],
