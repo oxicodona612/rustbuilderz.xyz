@@ -1,0 +1,86 @@
+---
+import { timeAgo } from '../../lib/format';
+import { getRecentCommits } from '../../lib/github';
+import { site } from '../../site.config';
+import Tile from '../Tile.astro';
+
+const commits = await getRecentCommits(site.github.username, 6);
+---
+
+<Tile label="Latest commits" span={4}>
+  {commits.length > 0 ? (
+    <ol class="commits">
+      {commits.map((commit) => (
+        <li>
+          <a class="commit" href={commit.url} target="_blank" rel="noopener noreferrer">
+            <span class="message">{commit.message}</span>
+            <span class="meta">
+              <span class="repo">{commit.repo}</span>
+              <span class="sha">{commit.sha}</span>
+              <time datetime={commit.date}>{timeAgo(new Date(commit.date))}</time>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  ) : (
+    <p class="unavailable">No public commits to show yet.</p>
+  )}
+</Tile>
+
+<style>
+  .commits {
+    display: grid;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .commit {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.55rem 0.65rem;
+    margin-inline: -0.65rem;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: background-color 200ms ease;
+  }
+
+  .commit:hover,
+  .commit:focus-visible {
+    background: var(--surface-raised);
+  }
+
+  .message {
+    overflow: hidden;
+    font-size: 0.875rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .meta {
+    display: flex;
+    gap: 0.6rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  .repo {
+    color: var(--accent-soft);
+  }
+
+  .sha {
+    font-family: var(--font-mono);
+  }
+
+  .meta time {
+    margin-left: auto;
+  }
+
+  .unavailable {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 0.875rem;
+  }
+</style>

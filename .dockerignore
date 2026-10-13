@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+**/.astro
+**/.wrangler
+**/.env
+.git
+.github
+apps/web/src
+apps/web/public

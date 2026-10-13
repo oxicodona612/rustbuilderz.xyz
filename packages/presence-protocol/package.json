@@ -1,0 +1,16 @@
+{
+  "name": "@rustbuilderz/presence-protocol",
+  "version": "1.0.0",
+  "description": "Wire format shared by the presence service and the website.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
+}

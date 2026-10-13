@@ -1,0 +1,64 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  /** Shown as the small uppercase heading. */
+  label: string;
+  /** Columns out of 12 on wide screens. Narrower screens stack tiles. */
+  span: 3 | 4 | 6 | 8 | 12;
+  id?: string;
+  /** Optional link in the header, such as "View on GitHub". */
+  link?: { href: string; text: string };
+  class?: string;
+}
+
+const { label, span, id, link, class: className } = Astro.props;
+const headingId = `${id ?? label.toLowerCase().replace(/\W+/g, '-')}-label`;
+---
+
+<section
+  class:list={['tile', `span-${span}`, className]}
+  id={id}
+  aria-labelledby={headingId}
+  data-spotlight
+>
+  <header class="tile-header">
+    <h2 class="label" id={headingId}>
+      {label}
+    </h2>
+    <slot name="header" />
+    {link && (
+      <a class="tile-link" href={link.href} target="_blank" rel="noopener noreferrer">
+        {link.text}
+        <Icon name="arrow" size={13} />
+      </a>
+    )}
+  </header>
+  <slot />
+</section>
+
+<style>
+  .tile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 1.25rem;
+  }
+
+  .tile-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-left: auto;
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    text-decoration: none;
+    transition: color 200ms ease;
+  }
+
+  .tile-link:hover,
+  .tile-link:focus-visible {
+    color: var(--accent);
+  }
+</style>

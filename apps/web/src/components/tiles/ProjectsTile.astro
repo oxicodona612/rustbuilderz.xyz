@@ -1,0 +1,32 @@
+---
+import { getCollection } from 'astro:content';
+import { site } from '../../site.config';
+import ProjectCard from '../ProjectCard.astro';
+import Tile from '../Tile.astro';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<Tile
+  label="Projects"
+  span={8}
+  id="projects"
+  link={{
+    href: `https://github.com/${site.github.username}?tab=repositories`,
+    text: 'All repositories',
+  }}
+>
+  <div class="projects">
+    {projects.map((project) => (
+      <ProjectCard project={project} />
+    ))}
+  </div>
+</Tile>
+
+<style>
+  .projects {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 0.75rem;
+  }
+</style>

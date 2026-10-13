@@ -1,0 +1,65 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../site.config';
+---
+
+<Base title={`Not found · ${site.name}`} description="This page does not exist.">
+  <main class="missing">
+    <p class="missing__code">404</p>
+    <h1 class="missing__title">Nothing here.</h1>
+    <p class="missing__text">The page you were looking for does not exist or has moved.</p>
+    <a class="missing__home" href="/">
+      Back to {site.name}.xyz
+    </a>
+  </main>
+</Base>
+
+<style>
+  .missing {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0.75rem;
+    min-height: 100dvh;
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+
+  .missing__code {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: clamp(4rem, 18vw, 7rem);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    background: linear-gradient(180deg, #fff, rgb(var(--accent-rgb) / 0.35));
+    background-clip: text;
+    color: transparent;
+  }
+
+  .missing__title {
+    margin: 0;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+  }
+
+  .missing__text {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .missing__home {
+    margin-top: 1rem;
+    padding: 0.6rem 1.1rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    color: var(--text);
+    text-decoration: none;
+    transition: background-color 200ms ease;
+  }
+
+  .missing__home:hover,
+  .missing__home:focus-visible {
+    background: rgb(var(--accent-rgb) / 0.1);
+  }
+</style>

@@ -1,0 +1,68 @@
+---
+import Tile from '../Tile.astro';
+---
+
+<Tile label="Visitors" span={3}>
+  <div class="views">
+    <p class="count" data-views aria-live="polite">
+      —
+    </p>
+    <p class="note">Each visitor counts once a day.</p>
+  </div>
+</Tile>
+
+<script>
+  const output = document.querySelector<HTMLElement>('[data-views]');
+  const format = new Intl.NumberFormat('en');
+
+  function countUp(element: HTMLElement, target: number) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || target < 10) {
+      element.textContent = format.format(target);
+      return;
+    }
+    const start = performance.now();
+    const duration = 900;
+    const frame = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - (1 - progress) ** 3;
+      element.textContent = format.format(Math.round(target * eased));
+      if (progress < 1) requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }
+
+  if (output) {
+    // POST records this visit and returns the new total in one request.
+    fetch('/api/views', { method: 'POST' })
+      .then((response) => (response.ok ? (response.json() as Promise<{ views: number }>) : null))
+      .then((body) => {
+        if (body) countUp(output, body.views);
+      })
+      .catch(() => undefined);
+  }
+</script>
+
+<style>
+  .views {
+    display: grid;
+    gap: 0.3rem;
+    margin-top: auto;
+  }
+
+  .views p {
+    margin: 0;
+  }
+
+  .count {
+    font-size: clamp(2.4rem, 5vw, 3.2rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .note {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+  }
+</style>

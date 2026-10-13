@@ -1,0 +1,219 @@
+---
+import Icon from '../Icon.astro';
+import Tile from '../Tile.astro';
+---
+
+<Tile label="Now" span={4} class="now">
+  <div class="activities" data-slot="activities"></div>
+  <p class="empty" data-slot="now-empty">
+    Waiting for Discord…
+  </p>
+
+  <template data-template="spotify">
+    <article class="activity spotify">
+      <a class="art" data-field="link" target="_blank" rel="noopener noreferrer">
+        <img data-field="art" width="64" height="64" alt="" />
+      </a>
+      <div class="body">
+        <p class="kind">
+          <Icon name="spotify" size={13} /> Listening to Spotify
+        </p>
+        <p class="title" data-field="song"></p>
+        <p class="line" data-field="artist"></p>
+        <p class="line dim" data-field="album"></p>
+        <div class="progress" data-field="progress">
+          <div class="track">
+            <div class="bar" data-field="bar"></div>
+          </div>
+          <div class="times">
+            <span data-field="elapsed"></span>
+            <span data-field="total"></span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <template data-template="activity">
+    <article class="activity">
+      <div class="art">
+        <img data-field="large" width="64" height="64" alt="" hidden />
+        <span class="placeholder" data-field="placeholder">
+          <Icon name="gamepad" size={26} />
+        </span>
+        <img class="small" data-field="small" width="22" height="22" alt="" hidden />
+      </div>
+      <div class="body">
+        <p class="kind" data-field="kind"></p>
+        <p class="title" data-field="name"></p>
+        <p class="line" data-field="details"></p>
+        <p class="line" data-field="state"></p>
+        <p class="line dim" data-field="time"></p>
+      </div>
+    </article>
+  </template>
+</Tile>
+
+<style>
+  .activities {
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .activities:empty {
+    display: none;
+  }
+
+  .empty {
+    display: grid;
+    place-items: center;
+    flex: 1;
+    min-height: 120px;
+    margin: 0;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    color: var(--text-dim);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+
+  .empty[hidden] {
+    display: none;
+  }
+
+  /* Cards are cloned from the templates at runtime, so their styles are global. */
+  :global(.now .activity) {
+    display: flex;
+    gap: 0.9rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-raised);
+    animation: rise 420ms var(--ease-out) both;
+  }
+
+  :global(.now .art) {
+    position: relative;
+    flex: none;
+    width: 64px;
+    height: 64px;
+  }
+
+  :global(.now .art > img:first-child) {
+    width: 100%;
+    height: 100%;
+    border-radius: 9px;
+    object-fit: cover;
+  }
+
+  :global(.now .placeholder) {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 9px;
+    background: rgb(var(--accent-rgb) / 0.1);
+    color: var(--accent);
+  }
+
+  :global(.now .placeholder[hidden]) {
+    display: none;
+  }
+
+  :global(.now .small) {
+    position: absolute;
+    right: -5px;
+    bottom: -5px;
+    width: 22px;
+    height: 22px;
+    border: 3px solid var(--surface-solid);
+    border-radius: 50%;
+    background: var(--surface-solid);
+  }
+
+  :global(.now .body) {
+    display: grid;
+    align-content: center;
+    gap: 0.1rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  :global(.now .body > p) {
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :global(.now .kind) {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  :global(.now .spotify .kind) {
+    color: #1ed760;
+  }
+
+  :global(.now .title) {
+    font-weight: 600;
+  }
+
+  :global(.now .line) {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+  }
+
+  :global(.now .dim) {
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  :global(.now .progress) {
+    display: grid;
+    gap: 0.25rem;
+    margin-top: 0.35rem;
+  }
+
+  :global(.now .progress[hidden]) {
+    display: none;
+  }
+
+  :global(.now .track) {
+    height: 4px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.1);
+    overflow: hidden;
+  }
+
+  :global(.now .bar) {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent);
+    transform: scaleX(var(--progress, 0));
+    transform-origin: left;
+    transition: transform 1s linear;
+  }
+
+  :global(.now .times) {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+</style>

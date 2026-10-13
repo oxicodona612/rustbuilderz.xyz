@@ -1,0 +1,261 @@
+---
+import { getContributions, type ContributionDay } from '../../lib/github';
+import { site } from '../../site.config';
+import Tile from '../Tile.astro';
+
+const username = site.github.username;
+const contributions = await getContributions(username);
+
+const dayFormat = new Intl.DateTimeFormat('en', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+const monthFormat = new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC' });
+const number = new Intl.NumberFormat('en');
+
+const parse = (date: string) => new Date(`${date}T00:00:00Z`);
+const describe = (day: ContributionDay) =>
+  `${day.count === 0 ? 'No' : number.format(day.count)} contribution${day.count === 1 ? '' : 's'} on ${dayFormat.format(parse(day.date))}`;
+
+/** Columns are weeks starting on Sunday, like GitHub's own calendar. */
+type Cell = ContributionDay | null;
+const weeks: Cell[][] = [];
+for (const day of contributions?.days ?? []) {
+  const weekday = parse(day.date).getUTCDay();
+  if (weeks.length === 0 || weekday === 0) {
+    weeks.push(Array.from<Cell>({ length: weekday }).fill(null));
+  }
+  weeks.at(-1)!.push(day);
+}
+
+// A month label sits over the month's first week (the one whose first day is
+// the 1st to the 7th), unless it would crowd the previous label.
+let lastLabelAt = -4;
+const monthLabels = weeks.map((week, index) => {
+  const first = week.find((day) => day !== null);
+  if (!first) return '';
+  const date = parse(first.date);
+  if (date.getUTCDate() > 7 || index - lastLabelAt < 4) return '';
+  lastLabelAt = index;
+  return monthFormat.format(date);
+});
+---
+
+<Tile
+  label="GitHub"
+  span={12}
+  id="github"
+  link={{ href: `https://github.com/${username}`, text: `@${username}` }}
+>
+  {contributions ? (
+    <div class="github">
+      <div class="calendar" data-calendar>
+        <div class="months" aria-hidden="true">
+          {monthLabels.map((label) => (
+            <span>{label}</span>
+          ))}
+        </div>
+        <div
+          class="cells"
+          role="img"
+          aria-label={`${number.format(contributions.total)} contributions in the last year`}
+        >
+          {weeks.map((week) =>
+            week.map((day) =>
+              day ? (
+                <span class:list={['cell', `level-${day.level}`]} title={describe(day)} />
+              ) : (
+                <span class="cell empty" />
+              ),
+            ),
+          )}
+        </div>
+        <div class="legend" aria-hidden="true">
+          <span>Less</span>
+          {[0, 1, 2, 3, 4].map((level) => (
+            <span class:list={['cell', `level-${level}`]} />
+          ))}
+          <span>More</span>
+        </div>
+      </div>
+
+      <dl class="stats">
+        <div>
+          <dt>Last year</dt>
+          <dd>{number.format(contributions.total)}</dd>
+        </div>
+        <div>
+          <dt>Longest streak</dt>
+          <dd>
+            {contributions.longestStreak}
+            <small>days</small>
+          </dd>
+        </div>
+        <div>
+          <dt>Current streak</dt>
+          <dd>
+            {contributions.currentStreak}
+            <small>days</small>
+          </dd>
+        </div>
+        <div>
+          <dt>Busiest day</dt>
+          <dd>
+            {contributions.busiest ? (
+              <>
+                {contributions.busiest.count}
+                <small>{dayFormat.format(parse(contributions.busiest.date))}</small>
+              </>
+            ) : (
+              '—'
+            )}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  ) : (
+    <p class="unavailable">GitHub activity could not be loaded when this page was built.</p>
+  )}
+</Tile>
+
+<script>
+  // On narrow screens the calendar scrolls; start at the most recent weeks.
+  const calendar = document.querySelector<HTMLElement>('[data-calendar]');
+  if (calendar) calendar.scrollLeft = calendar.scrollWidth;
+</script>
+
+<style>
+  .github {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-end;
+  }
+
+  .calendar {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .months,
+  .cells {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 12px;
+    gap: 3px;
+  }
+
+  .months {
+    height: 14px;
+    font-size: 0.6875rem;
+    color: var(--text-dim);
+  }
+
+  .months span {
+    white-space: nowrap;
+    overflow: visible;
+  }
+
+  .cells {
+    grid-template-rows: repeat(7, 12px);
+  }
+
+  .cell {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: rgb(255 255 255 / 0.05);
+  }
+
+  .cell.empty {
+    background: transparent;
+  }
+
+  .level-1 {
+    background: rgb(var(--accent-rgb) / 0.25);
+  }
+  .level-2 {
+    background: rgb(var(--accent-rgb) / 0.45);
+  }
+  .level-3 {
+    background: rgb(var(--accent-rgb) / 0.7);
+  }
+  .level-4 {
+    background: rgb(var(--accent-rgb) / 1);
+  }
+
+  .legend {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    font-size: 0.6875rem;
+    color: var(--text-dim);
+  }
+
+  .legend span:first-child {
+    margin-right: 4px;
+  }
+
+  .legend span:last-child {
+    margin-left: 4px;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(110px, 1fr));
+    gap: 1.1rem 1.5rem;
+    flex: none;
+    margin: 0;
+  }
+
+  .stats dt {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  .stats dd {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stats small {
+    margin-left: 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--text-dim);
+  }
+
+  .unavailable {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 0.875rem;
+  }
+
+  @media (max-width: 900px) {
+    .github {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .stats {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 520px) {
+    .stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

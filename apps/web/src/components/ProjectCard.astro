@@ -1,0 +1,256 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import { compactNumber, timeAgo } from '../lib/format';
+import { getRepoStats } from '../lib/github';
+import Icon from './Icon.astro';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { name, repo, summary, tags, website } = project.data;
+const stats = await getRepoStats(repo);
+const repoUrl = stats?.url ?? `https://github.com/${repo}`;
+const { Content } = await render(project);
+---
+
+<article class="project">
+  <header class="project__header">
+    <h3 class="project__name">
+      <a href={repoUrl} target="_blank" rel="noopener noreferrer">
+        {name}
+        <Icon name="arrow" size={16} class="project__arrow" />
+      </a>
+    </h3>
+    {stats && (
+      <p class="project__stats">
+        {stats.language && (
+          <span class="project__stat">
+            <span class="project__language-dot" aria-hidden="true" />
+            {stats.language}
+          </span>
+        )}
+        <span class="project__stat" title={`${stats.stars} stars`}>
+          <Icon name="star" size={14} />
+          {compactNumber(stats.stars)}
+        </span>
+      </p>
+    )}
+  </header>
+
+  <p class="project__summary">{summary}</p>
+
+  <div class="project__content">
+    <Content />
+  </div>
+
+  <footer class="project__footer">
+    <ul class="project__tags" aria-label="Topics">
+      {tags.map((tag) => (
+        <li>{tag}</li>
+      ))}
+    </ul>
+    <p class="project__links">
+      {website && (
+        <a href={website} target="_blank" rel="noopener noreferrer">
+          Website
+        </a>
+      )}
+      <a href={repoUrl} target="_blank" rel="noopener noreferrer">
+        <Icon name="github" size={14} /> Source
+      </a>
+    </p>
+    {stats && (
+      <p class="project__updated">
+        Updated <time datetime={stats.pushedAt}>{timeAgo(new Date(stats.pushedAt))}</time>
+      </p>
+    )}
+  </footer>
+</article>
+
+<style>
+  .project {
+    position: relative;
+    display: grid;
+    gap: 0.9rem;
+    align-content: start;
+    padding: 1.15rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-raised);
+    overflow: hidden;
+    isolation: isolate;
+    transition:
+      border-color 250ms ease,
+      transform 250ms var(--ease-out);
+  }
+
+  .project:hover {
+    border-color: rgb(var(--accent-rgb) / 0.4);
+    transform: translateY(-2px);
+  }
+
+  .project__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+  }
+
+  .project__name {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+
+  .project__name a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  /* Stretch the title link over the whole card. */
+  .project__name a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .project__name a:focus-visible {
+    outline: none;
+  }
+
+  .project:has(.project__name a:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  :global(.project__arrow) {
+    color: var(--text-dim);
+    transition:
+      transform 250ms var(--ease-out),
+      color 250ms ease;
+  }
+
+  .project:hover :global(.project__arrow) {
+    color: var(--accent);
+    transform: translate(2px, -2px);
+  }
+
+  .project__stats {
+    display: flex;
+    gap: 0.9rem;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  .project__stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .project__language-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .project__summary {
+    margin: 0;
+    color: var(--text);
+  }
+
+  .project__content {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  .project__content :global(ul) {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .project__content :global(li) {
+    position: relative;
+    padding-left: 1.1rem;
+  }
+
+  .project__content :global(li)::before {
+    content: '';
+    position: absolute;
+    top: 0.62em;
+    left: 0;
+    width: 6px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .project__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-top: 0.25rem;
+  }
+
+  .project__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .project__tags li {
+    padding: 0.2rem 0.55rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+  }
+
+  .project__links {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 0.9rem;
+    margin: 0 0 0 auto;
+    font-size: 0.8125rem;
+  }
+
+  .project__links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 200ms ease;
+  }
+
+  .project__links a:hover,
+  .project__links a:focus-visible {
+    color: var(--accent);
+  }
+
+  .project__updated {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+</style>

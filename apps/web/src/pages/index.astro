@@ -1,0 +1,218 @@
+---
+import Icon from '../components/Icon.astro';
+import AboutTile from '../components/tiles/AboutTile.astro';
+import ClockTile from '../components/tiles/ClockTile.astro';
+import CommitsTile from '../components/tiles/CommitsTile.astro';
+import GitHubTile from '../components/tiles/GitHubTile.astro';
+import NowTile from '../components/tiles/NowTile.astro';
+import ProfileTile from '../components/tiles/ProfileTile.astro';
+import ProjectsTile from '../components/tiles/ProjectsTile.astro';
+import SocialsTile from '../components/tiles/SocialsTile.astro';
+import ViewsTile from '../components/tiles/ViewsTile.astro';
+import Base from '../layouts/Base.astro';
+import { site } from '../site.config';
+
+const { presence } = site;
+const live = presence.discordUserId.length > 0;
+const year = new Date().getFullYear();
+---
+
+<Base>
+  <nav class="nav" aria-label="Main">
+    <a class="brand" href="/" aria-label={`${site.name} home`}>
+      <img src="/favicon.svg" alt="" width="24" height="24" />
+      <span>
+        {site.name}
+        <span class="tld">.xyz</span>
+      </span>
+    </a>
+    <ul class="links">
+      <li>
+        <a href="#projects">Projects</a>
+      </li>
+      <li>
+        <a href="#github">Activity</a>
+      </li>
+      <li>
+        <a href="#about">About</a>
+      </li>
+      <li>
+        <a
+          href={`https://github.com/${site.github.username}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Icon name="github" size={16} />
+          <span class="visually-hidden">GitHub</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <main
+    class="bento"
+    data-presence={live ? '' : undefined}
+    data-api={presence.api}
+    data-user-id={presence.discordUserId}
+    data-status="unknown"
+  >
+    <ProfileTile />
+    <NowTile />
+    <ClockTile />
+    <ViewsTile />
+    <SocialsTile />
+    <GitHubTile />
+    <ProjectsTile />
+    <CommitsTile />
+    <AboutTile />
+  </main>
+
+  <footer class="footer">
+    <p>
+      © {year} {site.name}
+    </p>
+    <p>
+      <a href={`https://github.com/${site.sourceRepo}`} target="_blank" rel="noopener noreferrer">
+        Source on GitHub
+      </a>
+    </p>
+  </footer>
+</Base>
+
+<script>
+  import { connectPresence } from '../lib/presence/client';
+  import { renderPresence, tick } from '../lib/presence/render';
+
+  const root = document.querySelector<HTMLElement>('[data-presence]');
+  const { api, userId } = root?.dataset ?? {};
+
+  if (root && api && userId) {
+    let last = '';
+    connectPresence({
+      api,
+      userId,
+      onPresence(presence) {
+        // Rebuilding identical cards would restart image loads for nothing.
+        const serialized = JSON.stringify(presence);
+        if (serialized === last) return;
+        last = serialized;
+        renderPresence(root, presence);
+      },
+      onState(state) {
+        root.dataset.connection = state;
+      },
+    });
+    setInterval(() => tick(root), 1000);
+  }
+</script>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    /* Full-bleed bar whose content lines up with the page column. */
+    padding: 0.9rem max(1rem, (100% - var(--page)) / 2);
+  }
+
+  .nav::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(to bottom, rgb(0 0 0 / 0.9), rgb(0 0 0 / 0));
+    backdrop-filter: blur(8px);
+    mask-image: linear-gradient(to bottom, #000 60%, transparent);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+
+  .tld {
+    color: var(--text-dim);
+  }
+
+  .links {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem clamp(0.45rem, 1.5vw, 0.75rem);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition:
+      color 200ms ease,
+      background-color 200ms ease;
+  }
+
+  .links a:hover,
+  .links a:focus-visible {
+    background: rgb(255 255 255 / 0.06);
+    color: var(--text);
+  }
+
+  .bento {
+    width: min(100% - 2rem, var(--page));
+    margin: clamp(0.5rem, 3vw, 1.5rem) auto 0;
+    animation: enter 700ms var(--ease-out) both;
+  }
+
+  .footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    width: min(100% - 2rem, var(--page));
+    margin: 2.5rem auto 0;
+    padding: 1.5rem 0 3rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.8125rem;
+  }
+
+  .footer p {
+    margin: 0;
+  }
+
+  .footer a {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+
+  .footer a:hover,
+  .footer a:focus-visible {
+    color: var(--accent);
+  }
+
+  @media (max-width: 560px) {
+    .links li:nth-child(2) {
+      display: none;
+    }
+  }
+
+  @keyframes enter {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+</style>

@@ -1,0 +1,149 @@
+---
+import { site } from '../../site.config';
+import Icon from '../Icon.astro';
+import Tile from '../Tile.astro';
+---
+
+<Tile label="Find me" span={6}>
+  <ul class="socials">
+    {site.socials.map((social) => (
+      <li class="social">
+        {social.href ? (
+          <a
+            class="main"
+            href={social.href}
+            target="_blank"
+            rel="noopener noreferrer me"
+            aria-label={`${social.label}: ${social.handle}`}
+          >
+            <Icon name={social.icon} size={20} />
+            <span class="text">
+              <span class="name">{social.label}</span>
+              <span class="handle">{social.handle}</span>
+            </span>
+          </a>
+        ) : (
+          <button
+            class="main"
+            type="button"
+            data-copy={social.copy}
+            aria-label={`Copy ${social.label} username ${social.handle}`}
+          >
+            <Icon name={social.icon} size={20} />
+            <span class="text">
+              <span class="name">{social.label}</span>
+              <span class="handle">{social.handle}</span>
+            </span>
+          </button>
+        )}
+        {social.href && social.copy && (
+          <button
+            class="copy"
+            type="button"
+            data-copy={social.copy}
+            aria-label={`Copy ${social.label} ID ${social.copy}`}
+          >
+            <Icon name="copy" size={15} />
+          </button>
+        )}
+      </li>
+    ))}
+  </ul>
+</Tile>
+
+<style>
+  .socials {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+    flex: 1;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .social {
+    position: relative;
+    display: flex;
+  }
+
+  .main {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-raised);
+    color: var(--text-muted);
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      border-color 200ms ease,
+      color 200ms ease,
+      transform 200ms var(--ease-out);
+  }
+
+  .main:hover,
+  .main:focus-visible {
+    border-color: rgb(var(--accent-rgb) / 0.45);
+    color: var(--text);
+    transform: translateY(-1px);
+  }
+
+  .text {
+    display: grid;
+    min-width: 0;
+  }
+
+  .name {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .handle {
+    overflow: hidden;
+    font-size: 0.875rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .copy {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transform: translateY(-50%);
+  }
+
+  .social:has(.copy) .main {
+    padding-right: 2.75rem;
+  }
+
+  .copy:hover,
+  .copy:focus-visible {
+    background: rgb(255 255 255 / 0.08);
+    color: var(--text);
+  }
+
+  @media (max-width: 420px) {
+    .socials {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

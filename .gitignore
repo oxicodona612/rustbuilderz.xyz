@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+.astro/
+.wrangler/
+
+# environment
+.env
+.env.*
+!.env.example
+.dev.vars
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# editors and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db

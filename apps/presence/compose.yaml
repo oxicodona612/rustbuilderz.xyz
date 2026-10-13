@@ -1,0 +1,24 @@
+services:
+  presence:
+    build:
+      context: ../..
+      dockerfile: apps/presence/Dockerfile
+      # Build steps use the host's network and resolver. Docker's isolated
+      # build network loses DNS on some hosts, which breaks npm installs.
+      network: host
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4100
+    ports:
+      # Bound to loopback: the Cloudflare tunnel on the host is the only way in.
+      - '127.0.0.1:4100:4100'
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    mem_limit: 256m
+    logging:
+      driver: local
+      options:
+        max-size: 10m

@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rustbuilderz-web",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+    // Only these paths reach the Worker: Matrix traffic for the homeserver,
+    // and the visitor counter API.
+    "run_worker_first": ["/_matrix/*", "/_continuwuity/*", "/.well-known/matrix/*", "/api/*"],
+  },
+  // No database_id: Wrangler creates the database on the first deploy.
+  "d1_databases": [{ "binding": "DB" }],
+  // A route, not a custom domain: the apex keeps its existing DNS record and
+  // origin, and the Worker sits in front of it.
+  "routes": [{ "pattern": "rustbuilderz.xyz/*", "zone_name": "rustbuilderz.xyz" }],
+  "workers_dev": false,
+  "observability": { "enabled": true },
+}

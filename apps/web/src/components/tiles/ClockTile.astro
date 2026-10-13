@@ -1,0 +1,125 @@
+---
+import { site } from '../../site.config';
+import Tile from '../Tile.astro';
+---
+
+<Tile label="Local time" span={3}>
+  <div class="clock" data-clock={site.clock.timeZone}>
+    <p class="time">
+      <span data-clock-time>--:--</span>
+      <span class="period" data-clock-period></span>
+    </p>
+    <p class="date" data-clock-date>
+      &nbsp;
+    </p>
+    <p class="offset" data-clock-offset>
+      &nbsp;
+    </p>
+  </div>
+</Tile>
+
+<script>
+  const clock = document.querySelector<HTMLElement>('[data-clock]');
+  const timeZone = clock?.dataset.clock;
+
+  /** Minutes east of UTC in a time zone, at a given moment. */
+  function offsetMinutes(zone: string | undefined, date: Date): number {
+    if (!zone) return -date.getTimezoneOffset();
+    const name = new Intl.DateTimeFormat('en-US', { timeZone: zone, timeZoneName: 'longOffset' })
+      .formatToParts(date)
+      .find((part) => part.type === 'timeZoneName')?.value;
+    const match = /GMT([+-])(\d{2}):(\d{2})/.exec(name ?? '');
+    if (!match) return 0;
+    const minutes = Number(match[2]) * 60 + Number(match[3]);
+    return match[1] === '-' ? -minutes : minutes;
+  }
+
+  function relation(diffMinutes: number): string {
+    if (diffMinutes === 0) return 'Same time as you';
+    const hours = Math.abs(diffMinutes) / 60;
+    const amount = Number.isInteger(hours) ? `${hours}h` : `${hours.toFixed(1)}h`;
+    return `${amount} ${diffMinutes > 0 ? 'ahead of' : 'behind'} you`;
+  }
+
+  if (clock && timeZone) {
+    const time = clock.querySelector<HTMLElement>('[data-clock-time]')!;
+    const period = clock.querySelector<HTMLElement>('[data-clock-period]')!;
+    const date = clock.querySelector<HTMLElement>('[data-clock-date]')!;
+    const offset = clock.querySelector<HTMLElement>('[data-clock-offset]')!;
+
+    const timeFormat = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+    const dateFormat = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+      timeZoneName: 'short',
+    });
+
+    const update = () => {
+      const now = new Date();
+      const parts = timeFormat.formatToParts(now);
+      const value = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+      time.textContent = `${value('hour')}:${value('minute')}`;
+      period.textContent = value('dayPeriod').toLowerCase();
+
+      const dateParts = dateFormat.formatToParts(now);
+      const dateValue = (type: string) => dateParts.find((part) => part.type === type)?.value ?? '';
+      date.textContent = `${dateValue('weekday')}, ${dateValue('month')} ${dateValue('day')} · ${dateValue('timeZoneName')}`;
+      offset.textContent = relation(offsetMinutes(timeZone, now) - offsetMinutes(undefined, now));
+    };
+
+    update();
+    // Align ticks to the start of each second so the minute flips on time.
+    setTimeout(
+      () => {
+        update();
+        setInterval(update, 1000);
+      },
+      1000 - (Date.now() % 1000),
+    );
+  }
+</script>
+
+<style>
+  .clock {
+    display: grid;
+    gap: 0.2rem;
+    margin-top: auto;
+  }
+
+  .clock p {
+    margin: 0;
+  }
+
+  .time {
+    font-size: clamp(2.4rem, 5vw, 3.2rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .period {
+    margin-left: 0.3rem;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--text-dim);
+  }
+
+  .date {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+  }
+
+  .offset {
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+</style>

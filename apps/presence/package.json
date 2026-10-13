@@ -1,0 +1,28 @@
+{
+  "name": "@rustbuilderz/presence",
+  "version": "1.0.0",
+  "description": "Self-hosted, Lanyard-compatible Discord presence API.",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env --watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsup",
+    "check": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\""
+  },
+  "dependencies": {
+    "@discordjs/core": "^2.6.0",
+    "@discordjs/rest": "^2.6.3",
+    "@discordjs/ws": "^2.0.4",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@rustbuilderz/presence-protocol": "workspace:*",
+    "@types/node": "^24.0.0",
+    "@types/ws": "^8.18.2",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3"
+  }
+}
