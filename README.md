@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/oxicodona612/rustbuilderz.xyz/actions/workflows/ci.yml/badge.svg)](https://github.com/oxicodona612/rustbuilderz.xyz/actions/workflows/ci.yml)
 
-The source of [rustbuilderz.xyz](https://rustbuilderz.xyz), my personal site. It's public so you can see how it works.
+The source of [rustbuilderz.xyz](https://rustbuilderz.xyz),
 
 ## What's running
 
