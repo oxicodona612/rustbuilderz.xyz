@@ -3,7 +3,7 @@ name: rustbuilderz.xyz
 repo: oxicodona612/rustbuilderz.xyz
 summary: This site, plus a self-hosted, Lanyard-compatible Discord presence API.
 tags: [Astro, Cloudflare Workers, Discord, WebSocket]
-order: 2
+order: 3
 ---
 
 - Static Astro site on Cloudflare Workers. Matrix traffic for the domain passes through to the homeserver.

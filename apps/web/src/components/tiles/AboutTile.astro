@@ -6,7 +6,7 @@ import Tile from '../Tile.astro';
 const { about, stack, homeserver } = site;
 ---
 
-<Tile label="About" span={12} id="about">
+<Tile label="About" span={8} id="about">
   <div class="terminal">
     <div class="block">
       <p class="command">
@@ -72,8 +72,7 @@ const { about, stack, homeserver } = site;
 <style>
   .terminal {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.6rem 2.5rem;
+    gap: 1rem;
     font-family: var(--font-mono);
     font-size: 0.8125rem;
     line-height: 1.65;
@@ -136,11 +135,5 @@ const { about, stack, homeserver } = site;
 
   .homeserver[data-state='down'] {
     color: var(--status-dnd);
-  }
-
-  @media (max-width: 760px) {
-    .terminal {
-      grid-template-columns: minmax(0, 1fr);
-    }
   }
 </style>

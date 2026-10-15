@@ -13,6 +13,8 @@ const projects = defineCollection({
     /** Lower sorts first. */
     order: z.number().default(100),
     website: z.url().optional(),
+    /** Where to get a build, such as the latest GitHub release. */
+    download: z.url().optional(),
   }),
 });
 
