@@ -15,7 +15,7 @@ export default defineConfig({
       assetsInlineLimit: 0,
     },
     server: {
-      // In `pnpm dev`, the visitor counter API comes from `wrangler dev`.
+      // In `pnpm dev`, the `/api` routes come from `wrangler dev`.
       // The original Host is kept so the Worker's same-origin check passes.
       proxy: { '/api': { target: 'http://127.0.0.1:8787', changeOrigin: false } },
     },

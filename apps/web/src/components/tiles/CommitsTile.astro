@@ -1,31 +1,31 @@
 ---
 import { timeAgo } from '../../lib/format';
-import { getRecentCommits } from '../../lib/github';
+import { fetchRecentCommits } from '../../lib/github';
+import { buildOptions } from '../../lib/github-build';
 import { site } from '../../site.config';
 import Tile from '../Tile.astro';
 
-const commits = await getRecentCommits(site.github.username, 6);
+const commits = await fetchRecentCommits(site.github.username, 6, buildOptions);
 ---
 
-<Tile label="Latest commits" span={4}>
-  {commits.length > 0 ? (
-    <ol class="commits">
-      {commits.map((commit) => (
-        <li>
-          <a class="commit" href={commit.url} target="_blank" rel="noopener noreferrer">
-            <span class="message">{commit.message}</span>
-            <span class="meta">
-              <span class="repo">{commit.repo}</span>
-              <span class="sha">{commit.sha}</span>
-              <time datetime={commit.date}>{timeAgo(new Date(commit.date))}</time>
-            </span>
-          </a>
-        </li>
-      ))}
-    </ol>
-  ) : (
-    <p class="unavailable">No public commits to show yet.</p>
-  )}
+<Tile label="Latest commits" span={4} id="commits">
+  <ol class="commits" data-commits>
+    {commits.map((commit) => (
+      <li>
+        <a class="commit" href={commit.url} target="_blank" rel="noopener noreferrer">
+          <span class="message">{commit.message}</span>
+          <span class="meta">
+            <span class="repo">{commit.repo}</span>
+            <span class="sha">{commit.sha}</span>
+            <time datetime={commit.date} data-relative>
+              {timeAgo(new Date(commit.date))}
+            </time>
+          </span>
+        </a>
+      </li>
+    ))}
+  </ol>
+  {commits.length === 0 && <p class="unavailable">No public commits to show yet.</p>}
 </Tile>
 
 <style>
@@ -37,7 +37,8 @@ const commits = await getRecentCommits(site.github.username, 6);
     list-style: none;
   }
 
-  .commit {
+  /* Items are rebuilt in the browser by the live refresh, so these are global. */
+  :global(#commits .commit) {
     display: grid;
     gap: 0.15rem;
     padding: 0.55rem 0.65rem;
@@ -47,34 +48,34 @@ const commits = await getRecentCommits(site.github.username, 6);
     transition: background-color 200ms ease;
   }
 
-  .commit:hover,
-  .commit:focus-visible {
+  :global(#commits .commit:hover),
+  :global(#commits .commit:focus-visible) {
     background: var(--surface-raised);
   }
 
-  .message {
+  :global(#commits .message) {
     overflow: hidden;
     font-size: 0.875rem;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .meta {
+  :global(#commits .meta) {
     display: flex;
     gap: 0.6rem;
     font-size: 0.75rem;
     color: var(--text-dim);
   }
 
-  .repo {
+  :global(#commits .repo) {
     color: var(--accent-soft);
   }
 
-  .sha {
+  :global(#commits .sha) {
     font-family: var(--font-mono);
   }
 
-  .meta time {
+  :global(#commits .meta time) {
     margin-left: auto;
   }
 

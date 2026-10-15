@@ -82,6 +82,9 @@ const year = new Date().getFullYear();
 <script>
   import { connectPresence } from '../lib/presence/client';
   import { renderPresence, tick } from '../lib/presence/render';
+  import { startGitHubLive } from '../scripts/github-live';
+
+  void startGitHubLive();
 
   const root = document.querySelector<HTMLElement>('[data-presence]');
   const { api, userId } = root?.dataset ?? {};

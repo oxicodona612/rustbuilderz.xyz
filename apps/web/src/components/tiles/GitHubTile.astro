@@ -1,46 +1,20 @@
 ---
-import { getContributions, type ContributionDay } from '../../lib/github';
+import { fetchContributions } from '../../lib/github';
+import {
+  calendarWeeks,
+  contributionsLabel,
+  describeDay,
+  formatDay,
+  monthLabels,
+  number,
+} from '../../lib/github-view';
 import { site } from '../../site.config';
 import Tile from '../Tile.astro';
 
 const username = site.github.username;
-const contributions = await getContributions(username);
-
-const dayFormat = new Intl.DateTimeFormat('en', {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-  timeZone: 'UTC',
-});
-const monthFormat = new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC' });
-const number = new Intl.NumberFormat('en');
-
-const parse = (date: string) => new Date(`${date}T00:00:00Z`);
-const describe = (day: ContributionDay) =>
-  `${day.count === 0 ? 'No' : number.format(day.count)} contribution${day.count === 1 ? '' : 's'} on ${dayFormat.format(parse(day.date))}`;
-
-/** Columns are weeks starting on Sunday, like GitHub's own calendar. */
-type Cell = ContributionDay | null;
-const weeks: Cell[][] = [];
-for (const day of contributions?.days ?? []) {
-  const weekday = parse(day.date).getUTCDay();
-  if (weeks.length === 0 || weekday === 0) {
-    weeks.push(Array.from<Cell>({ length: weekday }).fill(null));
-  }
-  weeks.at(-1)!.push(day);
-}
-
-// A month label sits over the month's first week (the one whose first day is
-// the 1st to the 7th), unless it would crowd the previous label.
-let lastLabelAt = -4;
-const monthLabels = weeks.map((week, index) => {
-  const first = week.find((day) => day !== null);
-  if (!first) return '';
-  const date = parse(first.date);
-  if (date.getUTCDate() > 7 || index - lastLabelAt < 4) return '';
-  lastLabelAt = index;
-  return monthFormat.format(date);
-});
+const contributions = await fetchContributions(username);
+const weeks = calendarWeeks(contributions?.days ?? []);
+const labels = monthLabels(weeks);
 ---
 
 <Tile
@@ -52,20 +26,21 @@ const monthLabels = weeks.map((week, index) => {
   {contributions ? (
     <div class="github">
       <div class="calendar" data-calendar>
-        <div class="months" aria-hidden="true">
-          {monthLabels.map((label) => (
+        <div class="months" aria-hidden="true" data-calendar-months>
+          {labels.map((label) => (
             <span>{label}</span>
           ))}
         </div>
         <div
           class="cells"
           role="img"
-          aria-label={`${number.format(contributions.total)} contributions in the last year`}
+          aria-label={contributionsLabel(contributions.total)}
+          data-calendar-cells
         >
           {weeks.map((week) =>
             week.map((day) =>
               day ? (
-                <span class:list={['cell', `level-${day.level}`]} title={describe(day)} />
+                <span class:list={['cell', `level-${day.level}`]} title={describeDay(day)} />
               ) : (
                 <span class="cell empty" />
               ),
@@ -84,33 +59,31 @@ const monthLabels = weeks.map((week, index) => {
       <dl class="stats">
         <div>
           <dt>Last year</dt>
-          <dd>{number.format(contributions.total)}</dd>
+          <dd>
+            <span data-stat="total">{number.format(contributions.total)}</span>
+          </dd>
         </div>
         <div>
           <dt>Longest streak</dt>
           <dd>
-            {contributions.longestStreak}
+            <span data-stat="longest">{contributions.longestStreak}</span>
             <small>days</small>
           </dd>
         </div>
         <div>
           <dt>Current streak</dt>
           <dd>
-            {contributions.currentStreak}
+            <span data-stat="current">{contributions.currentStreak}</span>
             <small>days</small>
           </dd>
         </div>
         <div>
           <dt>Busiest day</dt>
           <dd>
-            {contributions.busiest ? (
-              <>
-                {contributions.busiest.count}
-                <small>{dayFormat.format(parse(contributions.busiest.date))}</small>
-              </>
-            ) : (
-              '—'
-            )}
+            <span data-stat="busiest">{contributions.busiest?.count ?? '—'}</span>
+            <small data-stat="busiest-date">
+              {contributions.busiest && formatDay(contributions.busiest.date)}
+            </small>
           </dd>
         </div>
       </dl>
@@ -157,7 +130,8 @@ const monthLabels = weeks.map((week, index) => {
     color: var(--text-dim);
   }
 
-  .months span {
+  /* Month labels and cells are rebuilt in the browser, so these are global. */
+  :global(#github .months span) {
     white-space: nowrap;
     overflow: visible;
   }
@@ -166,27 +140,27 @@ const monthLabels = weeks.map((week, index) => {
     grid-template-rows: repeat(7, 12px);
   }
 
-  .cell {
+  :global(#github .cell) {
     width: 12px;
     height: 12px;
     border-radius: 3px;
     background: rgb(255 255 255 / 0.05);
   }
 
-  .cell.empty {
+  :global(#github .cell.empty) {
     background: transparent;
   }
 
-  .level-1 {
+  :global(#github .level-1) {
     background: rgb(var(--accent-rgb) / 0.25);
   }
-  .level-2 {
+  :global(#github .level-2) {
     background: rgb(var(--accent-rgb) / 0.45);
   }
-  .level-3 {
+  :global(#github .level-3) {
     background: rgb(var(--accent-rgb) / 0.7);
   }
-  .level-4 {
+  :global(#github .level-4) {
     background: rgb(var(--accent-rgb) / 1);
   }
 
