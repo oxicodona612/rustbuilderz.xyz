@@ -18,7 +18,8 @@ The source of [rustbuilderz.xyz](https://rustbuilderz.xyz),
 ```
 rustbuilderz.xyz ────────────▶ Cloudflare Worker ──▶ static site
   ├─ /api/views, /api/github ──▶ Cloudflare Worker ──▶ D1 (and GitHub, every 10 min)
-  └─ /_matrix/*, /.well-known/matrix/* ──▶ Cloudflare tunnel ──▶ Continuwuity
+  ├─ /_matrix/*, /.well-known/matrix/* ──▶ Cloudflare tunnel ──▶ Caddy ──▶ Continuwuity
+  └─ /orchard, /orchard/* ─────────────▶ Cloudflare tunnel ──▶ Caddy ──▶ Orchard site
 
 presence.rustbuilderz.xyz ───▶ Cloudflare tunnel ──▶ presence service ◀── Discord gateway
 ```

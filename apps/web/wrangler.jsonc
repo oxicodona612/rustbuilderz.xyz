@@ -9,8 +9,16 @@
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page",
     // Only these paths reach the Worker: Matrix traffic for the homeserver,
-    // and the small API (visitor counter, live GitHub data).
-    "run_worker_first": ["/_matrix/*", "/_continuwuity/*", "/.well-known/matrix/*", "/api/*"],
+    // Orchard's download site (also on the homeserver), and the small API
+    // (visitor counter, live GitHub data).
+    "run_worker_first": [
+      "/_matrix/*",
+      "/_continuwuity/*",
+      "/.well-known/matrix/*",
+      "/orchard",
+      "/orchard/*",
+      "/api/*",
+    ],
   },
   // The visitor counter's database. Wrangler created it on the first deploy;
   // the ID is pinned so every later deploy uses the same one.
