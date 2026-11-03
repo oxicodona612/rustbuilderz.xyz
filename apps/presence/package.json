@@ -22,7 +22,7 @@
     "@rustbuilderz/presence-protocol": "workspace:*",
     "@types/node": "^24.0.0",
     "@types/ws": "^8.18.2",
-    "tsup": "^8.5.1",
+    "tsup": "^9.0.0",
     "typescript": "^6.0.3"
   }
 }
