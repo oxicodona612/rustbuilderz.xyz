@@ -2,7 +2,7 @@
 # Build from the repository root:
 #   docker build -f apps/presence/Dockerfile -t rustbuilderz-presence .
 
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /repo
 RUN npm install --global pnpm@11.9.0
 
@@ -19,7 +19,7 @@ RUN pnpm --filter @rustbuilderz/presence build \
  && pnpm --filter @rustbuilderz/presence deploy --prod --legacy /out
 
 
-FROM node:24-alpine
+FROM node:26-alpine
 ENV NODE_ENV=production
 WORKDIR /app
 
