@@ -17,8 +17,23 @@ import { handleGitHub } from './github';
 import { failure } from './http';
 import { handleViews } from './views';
 
-const ORIGIN_PREFIXES = ['/_matrix/', '/_continuwuity/', '/.well-known/matrix/', '/orchard/'];
-const ORIGIN_PATHS = ['/orchard'];
+const ORIGIN_PREFIXES = ['/_matrix/', '/_continuwuity/', '/.well-known/matrix/'];
+const ORIGIN_PATHS: string[] = [];
+
+// Orchard moved to its own site (orchardexec.xyz). Transparent mirror so the
+// baked update URLs in already-shipped launchers keep resolving: /orchard/* is
+// proxied to orchardexec, which serves the update API and download redirects.
+// Remove this once the field has updated to launchers that hit orchardexec
+// directly. The Pi no longer serves /orchard.
+const ORCHARD_HOST = 'orchardexec.xyz';
+function mirrorOrchard(request: Request, pathname: string): Promise<Response> | null {
+  if (pathname !== '/orchard' && !pathname.startsWith('/orchard/')) return null;
+  const target = new URL(request.url);
+  target.protocol = 'https:';
+  target.hostname = ORCHARD_HOST;
+  target.port = '';
+  return fetch(new Request(target.toString(), request));
+}
 
 async function handleApi(
   request: Request,
@@ -40,6 +55,8 @@ async function handleApi(
 export default {
   async fetch(request, env, ctx): Promise<Response> {
     const { pathname } = new URL(request.url);
+    const orchard = mirrorOrchard(request, pathname);
+    if (orchard) return orchard;
     if (
       ORIGIN_PATHS.includes(pathname) ||
       ORIGIN_PREFIXES.some((prefix) => pathname.startsWith(prefix))
